@@ -1,0 +1,43 @@
+title = "Gitleaks config"
+description = "Scan only Python source files, skip env and venv"
+version = 2
+
+[allowlist]
+description = "Allowed paths and patterns"
+paths = [
+  '^\.venv/',
+  '^venv/',
+  '^env/',
+  '^tests/',
+  '^migrations/',
+  '.*\.env$',
+]
+regexes = []
+stopwords = []
+commits = []
+
+[[rules]]
+id = "generic-api-password"
+description = "Generic password or API key"
+regex = '''(?i)(password|passwd|secret|api[_-]?key|token)[\s:=]+['"]?[a-z0-9_\-]{10,}['"]?'''
+tags = ["key", "API", "password", "generic"]
+entropy = 3
+severity = "HIGH"
+
+[[rules]]
+id = "private-key"
+description = "Private key"
+regex = '''-----BEGIN(.*?)PRIVATE KEY-----'''
+tags = ["key", "private"]
+severity = "HIGH"
+
+[[rules]]
+id = "generic-jwt"
+description = "Generic JWT"
+regex = '''eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
+tags = ["token", "JWT"]
+severity = "MEDIUM"
+
+[entropy]
+enable = true
+threshold = 4.5
