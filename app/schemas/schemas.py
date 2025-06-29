@@ -37,4 +37,4 @@ class TaskOut(BaseModel):
     status: TaskStatus
 
     class Config:
-        orm_mode = True
+        from_attributes = True
