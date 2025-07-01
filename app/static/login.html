@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Login</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Login</h1>
+    <form id="loginForm">
+      <label>
+        Username
+        <input id="username" name="username" required />
+      </label>
+
+      <label>
+        Password
+        <input id="password" name="password" type="password" required />
+      </label>
+
+      <button type="submit">Login</button>
+      <small id="error" hidden style="color: red;"></small>
+    </form>
+
+    <p><a href="/static/register.html">Don’t have an account? Register</a></p>
+  </main>
+
+  <script>
+    const existingToken = localStorage.getItem("token");
+    if (existingToken) {
+      window.location.href = "/static/tasks.html";
+    }
+
+    const form = document.getElementById("loginForm");
+    const errorDiv = document.getElementById("error");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      errorDiv.hidden = true;
+
+      const payload = {
+        username: form.username.value.trim(),
+        password: form.password.value,
+      };
+
+      try {
+        const response = await fetch("/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const { access_token } = await response.json();
+          localStorage.setItem("token", access_token);
+          window.location.href = "/static/tasks.html";
+        } else {
+          const { detail } = await response.json();
+          throw new Error(detail || "Login failed");
+        }
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>

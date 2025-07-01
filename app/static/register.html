@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <h2>Register</h2>
+  <form id="register-form">
+    <label for="first_name">First Name:</label><br>
+    <input type="text" id="first_name" required><br><br>
+
+    <label for="last_name">Last Name:</label><br>
+    <input type="text" id="last_name"><br><br>
+
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" required><br><br>
+
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <div id="message"></div>
+
+  <script>
+        const navEl = document.getElementById("navbar");
+    if (navEl) {
+      fetch("/static/navbar.html")
+        .then(r => r.text())
+        .then(html => navEl.innerHTML = html);
+    }
+
+    const existingToken = localStorage.getItem("token");
+    if (existingToken) {
+      window.location.href = "/static/tasks.html";
+    }
+
+    const form = document.getElementById("register-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      };
+
+      try {
+        const response = await fetch("/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.detail || "Registration failed");
+        }
+
+        document.getElementById("message").textContent = "Registration successful!";
+        console.log("Access Token:", result.access_token);
+
+      } catch (err) {
+        document.getElementById("message").textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

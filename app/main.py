@@ -1,15 +1,21 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import RedirectResponse
 
-from app.api import routes
-from app.auth import routes_auth
-from app.crud import routes_tasks
 from app.db.session import engine
 from app.models.models import Base
+from app.auth.routes_auth import router as auth_router
+from app.crud.routes_tasks import router as tasks_router
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(routes.router)
-app.include_router(routes_tasks.router)
-app.include_router(routes_auth.router)
+app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
 
-Base.metadata.create_all(bind=engine)
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(tasks_router, prefix="/tasks", tags=["tasks"])
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/static/login.html")

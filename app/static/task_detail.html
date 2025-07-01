@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Task Details</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <h1>Edit Task</h1>
+  <form id="editForm">
+    <label>Title<br>
+      <input name="title" id="titleInput" required>
+    </label><br><br>
+
+    <label>Description<br>
+      <textarea name="description" id="descInput"></textarea>
+    </label><br><br>
+
+    <label>Status<br>
+      <select name="status" id="statusInput">
+        <option value="New">New</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </label><br><br>
+
+    <button type="submit">Update Task</button>
+  </form>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) location.href = "/static/login.html";
+
+    const navEl = document.getElementById("navbar");
+    if (navEl) {
+      fetch("/static/navbar.html")
+        .then(r => r.text())
+        .then(html => navEl.innerHTML = html);
+    }
+
+    const params = new URLSearchParams(location.search);
+    const taskId = params.get("id");
+
+    async function loadTask() {
+      const res = await fetch(`/tasks/${taskId}`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!res.ok) {
+        alert("Failed to load task");
+        return;
+      }
+      const task = await res.json();
+      document.getElementById("titleInput").value = task.title;
+      document.getElementById("descInput").value = task.description;
+      document.getElementById("statusInput").value = task.status;
+    }
+
+    document.getElementById("editForm").onsubmit = async e => {
+      e.preventDefault();
+      const body = {
+        title: document.getElementById("titleInput").value,
+        description: document.getElementById("descInput").value,
+        status: document.getElementById("statusInput").value
+      };
+      const res = await fetch(`/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        alert("Task updated");
+        location.href = "/static/tasks.html";
+      } else {
+        const errorText = await res.text();
+        alert("Failed to update: " + errorText);
+      }
+    };
+
+    loadTask();
+  </script>
+</body>
+</html>
