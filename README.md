@@ -1,5 +1,5 @@
 # FastAPI ToDo List API
-A functioning API based ToDoList application built with PostgreSQL, FastAPI, and Docker. Implemented JWT authentication, registration, CRUD.
+A functioning API based ToDoList application built with PostgreSQL, FastAPI, and Docker. Implemented JWT authentication, registration, CRUD, static templating.
 
 User authentication and registration with JWT
 Token-based authentication

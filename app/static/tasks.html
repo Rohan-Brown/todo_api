@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Tasks</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <h1>My Tasks</h1>
+
+  <label>
+    Status:
+    <select id="statusFilter">
+      <option value="">All</option>
+      <option value="New">New</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Completed">Completed</option>
+    </select>
+  </label>
+  <label>
+    Items per page:
+    <input type="number" id="limit" value="10" min="1">
+  </label>
+  <button id="load">Load Tasks</button>
+
+  <h2>Create Task</h2>
+  <form id="createForm">
+    <input name="title" placeholder="Title" required><br>
+    <textarea name="description" placeholder="Description"></textarea><br>
+    <button>Create</button>
+  </form>
+
+  <div style="margin-top:1em;">
+    <button id="prev" disabled>Previous</button>
+    <span>Page <span id="pageNum">1</span></span>
+    <button id="next">Next</button>
+  </div>
+
+  <ul id="tasks"></ul>
+
+  <script>
+    const navEl = document.getElementById("navbar");
+    if (navEl) {
+      fetch("/static/navbar.html")
+        .then(r => r.text())
+        .then(html => navEl.innerHTML = html);
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) location.href = "/static/login.html";
+
+    const statusFilter = document.getElementById("statusFilter");
+    const limitInput    = document.getElementById("limit");
+    const loadBtn       = document.getElementById("load");
+    const prevBtn       = document.getElementById("prev");
+    const nextBtn       = document.getElementById("next");
+    const pageNumSpan   = document.getElementById("pageNum");
+    const tasksUL       = document.getElementById("tasks");
+    const createForm    = document.getElementById("createForm");
+
+    let skip = 0;
+    function currentPage() {
+      const lim = parseInt(limitInput.value, 10);
+      return Math.floor(skip / lim) + 1;
+    }
+
+    async function loadTasks() {
+      const lim = parseInt(limitInput.value, 10);
+      let url = `/tasks?skip=${skip}&limit=${lim}`;
+      if (statusFilter.value) {
+        url += `&status=${encodeURIComponent(statusFilter.value)}`;
+      }
+
+      const res = await fetch(url, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        return location.href = "/static/login.html";
+      }
+      const tasks = await res.json();
+
+      tasksUL.innerHTML = "";
+      for (const t of tasks) {
+        const li   = document.createElement("li");
+        const link = document.createElement("a");
+        link.href        = `/static/task_detail.html?id=${t.id}`;
+        link.textContent = `${t.title} [${t.status}]`;
+        li.appendChild(link);
+        tasksUL.appendChild(li);
+      }
+
+      pageNumSpan.textContent = currentPage();
+      prevBtn.disabled = skip === 0;
+      nextBtn.disabled = tasks.length < lim;
+    }
+
+    loadBtn.onclick = () => {
+      skip = 0;
+      loadTasks();
+    };
+    prevBtn.onclick = () => {
+      const lim = parseInt(limitInput.value, 10);
+      skip = Math.max(0, skip - lim);
+      loadTasks();
+    };
+    nextBtn.onclick = () => {
+      const lim = parseInt(limitInput.value, 10);
+      skip += lim;
+      loadTasks();
+    };
+
+    createForm.onsubmit = async e => {
+      e.preventDefault();
+      const body = {
+        title: e.target.title.value,
+        description: e.target.description.value
+      };
+      const res = await fetch("/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+token
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) alert("Failed to create task");
+      else {
+        e.target.reset();
+        loadTasks();
+      }
+    };
+
+    loadTasks();
+  </script>
+</body>
+</html>
