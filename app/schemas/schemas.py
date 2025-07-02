@@ -1,11 +1,14 @@
-from pydantic import BaseModel
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel
+
 
 class TaskStatus(str, Enum):
     new = "New"
     in_progress = "In Progress"
     completed = "Completed"
+
 
 class UserCreate(BaseModel):
     first_name: str
@@ -13,22 +16,27 @@ class UserCreate(BaseModel):
     username: str
     password: str
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
+
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[TaskStatus] = None
+
 
 class TaskOut(BaseModel):
     id: int

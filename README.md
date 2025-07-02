@@ -16,7 +16,7 @@ Uvicorn
 Pydantic
 JWT Authentication
 
-Requirements 
+Requirements
 
 Python 3.12+
 Docker
@@ -27,4 +27,3 @@ DATABASE_URL=postgresql://username:password@host:5432/database_name
 SECRET_KEY=key
 ALGORITHM=some_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES=10
-

@@ -1,13 +1,14 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.auth.auth import SECRET_KEY, ALGORITHM
-from app.models.models import User
+from app.auth.auth import ALGORITHM, SECRET_KEY
 from app.db.session import SessionLocal
+from app.models.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
 
 def get_db():
     db = SessionLocal()
@@ -16,7 +17,11 @@ def get_db():
     finally:
         db.close()
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

@@ -1,8 +1,7 @@
 import pytest
-from app.schemas.schemas import (
-    UserCreate, UserLogin, Token, TaskCreate,
-    TaskUpdate, TaskOut, TaskStatus
-)
+
+from app.schemas.schemas import (TaskCreate, TaskOut, TaskStatus, TaskUpdate,
+                                 Token, UserCreate, UserLogin)
 
 
 def test_user_create_valid():
@@ -10,9 +9,11 @@ def test_user_create_valid():
     assert user.first_name == "John"
     assert user.last_name is None
 
+
 def test_user_create_missing_required():
     with pytest.raises(ValueError):
         UserCreate(username="useronly")
+
 
 def test_user_login_schema():
     login = UserLogin(username="test", password="pw")
@@ -28,9 +29,11 @@ def test_task_create_schema():
     task = TaskCreate(title="Do thing", description="Details here")
     assert task.title == "Do thing"
 
+
 def test_task_update_partial():
     update = TaskUpdate(status=TaskStatus.completed)
     assert update.status == TaskStatus.completed
+
 
 def test_task_update_none_fields():
     update = TaskUpdate()
@@ -55,4 +58,3 @@ def test_task_out_from_orm():
     schema = TaskOut.model_validate(orm_obj)
     assert schema.status == TaskStatus.in_progress
     assert schema.title == "Test"
-
