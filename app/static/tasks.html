@@ -6,8 +6,13 @@
   <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 </head>
 <body>
-  <div id="navbar"></div>
-
+  <div id="navbar">
+    <nav>
+      <a href="/static/public_tasks.html">Public Tasks</a> |
+      <a href="/static/tasks.html">My Tasks</a> |
+      <a href="/static/logout.html">Logout</a>
+    </nav>
+  </div>
   <h1>My Tasks</h1>
 
   <label>
@@ -41,13 +46,6 @@
   <ul id="tasks"></ul>
 
   <script>
-    const navEl = document.getElementById("navbar");
-    if (navEl) {
-      fetch("/static/navbar.html")
-        .then(r => r.text())
-        .then(html => navEl.innerHTML = html);
-    }
-
     const token = localStorage.getItem("token");
     if (!token) location.href = "/static/login.html";
 

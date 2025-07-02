@@ -22,6 +22,18 @@ def create_task(
     db.refresh(db_task)
     return db_task
 
+@router.get("/public", response_model=List[TaskOut])
+def list_public_tasks(
+    status: Optional[TaskStatus] = None,
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Task)
+    if status:
+        query = query.filter(Task.status == status)
+    return query.offset(skip).limit(limit).all()
+
 
 @router.get("", response_model=List[TaskOut])
 def get_all_tasks(

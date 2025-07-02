@@ -6,7 +6,13 @@
   <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 </head>
 <body>
-  <div id="navbar"></div>
+  <div id="navbar">
+    <nav>
+      <a href="/static/public_tasks.html">Public Tasks</a> |
+      <a href="/static/tasks.html">My Tasks</a> |
+      <a href="/static/logout.html">Logout</a>
+    </nav>
+  </div>
 
   <h1>Edit Task</h1>
   <form id="editForm">
@@ -32,13 +38,6 @@
   <script>
     const token = localStorage.getItem("token");
     if (!token) location.href = "/static/login.html";
-
-    const navEl = document.getElementById("navbar");
-    if (navEl) {
-      fetch("/static/navbar.html")
-        .then(r => r.text())
-        .then(html => navEl.innerHTML = html);
-    }
 
     const params = new URLSearchParams(location.search);
     const taskId = params.get("id");
