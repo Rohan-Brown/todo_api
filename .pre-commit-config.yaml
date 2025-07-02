@@ -60,3 +60,18 @@ repos:
     hooks:
       - id: gitleaks
         args: ["protect", "--staged"]
+
+  - repo: https://github.com/ymyzk/pytest-pre-commit
+    rev: v1.4.0
+    hooks:
+      - id: pytest
+        name: Run tests with pytest
+        args:
+          - "--tb=short"
+          - "--maxfail=1"
+          - "--cov=app"
+          - "--cov-report=term-missing"
+          - "--cov-fail-under=90"
+        additional_dependencies:
+          - pytest
+          - pytest-cov

@@ -8,6 +8,7 @@ venv/
 
 # Local environment variables
 .env
+.env.test
 
 # Test and type-checking caches
 .pytest_cache/

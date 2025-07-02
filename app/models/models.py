@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
+
 import enum
 
-Base = declarative_base()
+from app.db.session import Base
+
 
 class TaskStatus(str, enum.Enum):
     new = "New"
