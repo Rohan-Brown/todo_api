@@ -4,8 +4,9 @@ services:
   db:
     image: postgres:15
     restart: always
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: postgresql://todo_user:todo_password@db:5432/todo_db
+
     ports:
       - "5432:5432"
     volumes:

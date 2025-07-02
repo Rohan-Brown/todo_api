@@ -12,7 +12,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if get_user_by_username(db, user.username):
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
-    db_user = User(**user.dict(exclude={"password"}), password=hashed_password)
+    db_user = User(**user.model_dump(exclude={"password"}), password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

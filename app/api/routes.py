@@ -5,5 +5,5 @@ router = APIRouter()
 
 @router.get("/hello")
 def say_hello():
-    return {"message": "Hello from router"}
+    return {"message": "Hello and welcome to my TaskListApp!"}
 
