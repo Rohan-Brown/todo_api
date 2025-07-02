@@ -10,20 +10,9 @@ from app.schemas.schemas import TaskCreate, TaskOut, TaskUpdate
 router = APIRouter()
 
 
-@router.post("", response_model=TaskOut)
-def create_task(
-    task: TaskCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    db_task = Task(**task.dict(), user_id=current_user.id)
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    return db_task
 
 @router.get("/public", response_model=List[TaskOut])
-def list_public_tasks(
+def get_all_tasks(
     status: Optional[TaskStatus] = None,
     skip: int = 0,
     limit: int = 10,
@@ -36,7 +25,7 @@ def list_public_tasks(
 
 
 @router.get("", response_model=List[TaskOut])
-def get_all_tasks(
+def get_all_user_tasks(
     status: Optional[TaskStatus] = None,
     skip: int = 0,
     limit: int = 10,
@@ -50,7 +39,7 @@ def get_all_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskOut)
-def get_task(
+def get_specific_task(
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -63,6 +52,18 @@ def get_task(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
+
+@router.post("", response_model=TaskOut)
+def create_task(
+    task: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    db_task = Task(**task.dict(), user_id=current_user.id)
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
 
 
 @router.put("/{task_id}", response_model=TaskOut)

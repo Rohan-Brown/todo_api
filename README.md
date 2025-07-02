@@ -30,3 +30,5 @@ ACCESS_TOKEN_EXPIRE_MINUTES=10
 
 For recruiters
 Assuming 6 symbols required the password field means 6 characters and not 6 special characters e.g. @#$
+
+Decided to use TaskStatus model instead of using 'constr' with 'regex' or 'Literal'. Using TaskStatus model for ease of use and because it follows best practice.
