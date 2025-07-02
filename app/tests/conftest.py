@@ -1,18 +1,16 @@
-import logging
 import os
+
 import pytest
+from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.auth.auth import get_password_hash
-from app.main import app
+from app.db.deps import get_current_user, get_db
 from app.db.session import Base
-from app.db.deps import get_db
+from app.main import app
 from app.models.models import User
-from app.db.deps import get_current_user
-from dotenv import load_dotenv
-
 
 load_dotenv(dotenv_path=".env.test")
 
@@ -29,11 +27,13 @@ TestingSessionLocal = sessionmaker(
     bind=engine,
 )
 
+
 @pytest.fixture(scope="session", autouse=True)
 def initialize_database():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture(scope="function", autouse=True)
 def clean_tables(db_session):
@@ -42,6 +42,7 @@ def clean_tables(db_session):
         db_session.execute(table.delete())
     db_session.commit()
 
+
 @pytest.fixture(scope="function")
 def db_session():
     session = TestingSessionLocal()
@@ -49,6 +50,7 @@ def db_session():
         yield session
     finally:
         session.close()
+
 
 @pytest.fixture(scope="function")
 def client(db_session):
@@ -65,7 +67,7 @@ def client(db_session):
         first_name="Test",
         last_name="User",
         username="testuser",
-        password=get_password_hash(raw_password)
+        password=get_password_hash(raw_password),
     )
 
     db_session.add(test_user)

@@ -18,10 +18,13 @@ def test_get_all_tasks(client):
 
 
 def test_get_task_by_id(client):
-    task = client.post("/tasks", json={
-        "title": "Sample",
-        "description": "Details",
-    }).json()
+    task = client.post(
+        "/tasks",
+        json={
+            "title": "Sample",
+            "description": "Details",
+        },
+    ).json()
 
     task_id = task["id"]
     response = client.get(f"/tasks/{task_id}")
@@ -30,10 +33,13 @@ def test_get_task_by_id(client):
 
 
 def test_update_task(client):
-    task = client.post("/tasks", json={
-        "title": "Before Update",
-        "description": "Initial",
-    }).json()
+    task = client.post(
+        "/tasks",
+        json={
+            "title": "Before Update",
+            "description": "Initial",
+        },
+    ).json()
 
     task_id = task["id"]
     update = {"title": "After Update"}
@@ -43,10 +49,13 @@ def test_update_task(client):
 
 
 def test_delete_task(client):
-    task = client.post("/tasks", json={
-        "title": "To Be Deleted",
-        "description": "Bye",
-    }).json()
+    task = client.post(
+        "/tasks",
+        json={
+            "title": "To Be Deleted",
+            "description": "Bye",
+        },
+    ).json()
 
     task_id = task["id"]
     response = client.get(f"/tasks/{task_id}")
@@ -57,10 +66,13 @@ def test_delete_task(client):
 
 
 def test_complete_task(client):
-    task = client.post("/tasks", json={
-        "title": "To Be Completed",
-        "description": "Do it",
-    }).json()
+    task = client.post(
+        "/tasks",
+        json={
+            "title": "To Be Completed",
+            "description": "Do it",
+        },
+    ).json()
 
     task_id = task["id"]
     response = client.get(f"/tasks/{task_id}")

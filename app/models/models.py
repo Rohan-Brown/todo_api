@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum
-from sqlalchemy.orm import relationship
-
 import enum
+
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -10,6 +10,7 @@ class TaskStatus(str, enum.Enum):
     new = "New"
     in_progress = "In Progress"
     completed = "Completed"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -21,6 +22,7 @@ class User(Base):
     password = Column(String, nullable=False)
 
     tasks = relationship("Task", back_populates="owner", cascade="all, delete")
+
 
 class Task(Base):
     __tablename__ = "tasks"

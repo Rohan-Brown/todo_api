@@ -8,12 +8,6 @@ repos:
       - id: trailing-whitespace
       - id: check-yaml
 
-  - repo: https://github.com/psf/black
-    rev: 24.3.0
-    hooks:
-      - id: black
-        language_version: python3.11
-
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
@@ -28,13 +22,6 @@ repos:
           "--fix",
           "--unsafe-fixes"
         ]
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-bugbear, flake8-comprehensions]
-        name: flake8 (linter)
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.10.0
@@ -61,17 +48,10 @@ repos:
       - id: gitleaks
         args: ["protect", "--staged"]
 
-  - repo: https://github.com/ymyzk/pytest-pre-commit
-    rev: v1.4.0
+  - repo: local
     hooks:
       - id: pytest
-        name: Run tests with pytest
-        args:
-          - "--tb=short"
-          - "--maxfail=1"
-          - "--cov=app"
-          - "--cov-report=term-missing"
-          - "--cov-fail-under=90"
-        additional_dependencies:
-          - pytest
-          - pytest-cov
+        name: Run Pytest with Coverage
+        entry: pytest --cov=app --cov-fail-under=90
+        language: system
+        pass_filenames: false
