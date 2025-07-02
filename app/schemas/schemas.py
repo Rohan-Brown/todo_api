@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TaskStatus(str, Enum):
@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     first_name: str
     last_name: Optional[str] = None
     username: str
-    password: str
+    password: str = Field(required=True, min_length=6)
 
 
 class UserLogin(BaseModel):
