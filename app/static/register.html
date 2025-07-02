@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Register</title>
-  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 
 </head>
 <body>
-  <div id="navbar"></div>
-
+  <main class="container">
   <h2>Register</h2>
   <form id="register-form">
     <label for="first_name">First Name:</label><br>
@@ -25,16 +24,12 @@
 
     <button type="submit">Register</button>
   </form>
+  <p><a href="/static/login.html">Already have an account? Login</a></p>
 
   <div id="message"></div>
+  </main>
 
   <script>
-        const navEl = document.getElementById("navbar");
-    if (navEl) {
-      fetch("/static/navbar.html")
-        .then(r => r.text())
-        .then(html => navEl.innerHTML = html);
-    }
 
     const existingToken = localStorage.getItem("token");
     if (existingToken) {
