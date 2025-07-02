@@ -1,30 +1,40 @@
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_current_user, get_db
 from app.models.models import Task, TaskStatus, User
-from app.schemas.schemas import TaskCreate, TaskOut, TaskUpdate
+from app.schemas.schemas import PaginatedTasks, TaskCreate, TaskOut, TaskUpdate
 
 router = APIRouter()
 
 
 
-@router.get("/public", response_model=List[TaskOut])
+@router.get("/public", response_model=PaginatedTasks)
 def get_all_tasks(
     status: Optional[TaskStatus] = None,
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     query = db.query(Task)
     if status:
         query = query.filter(Task.status == status)
-    return query.offset(skip).limit(limit).all()
+
+    total = query.count()
+    tasks = query.offset(skip).limit(limit).all()
+
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "tasks": tasks
+    }
 
 
-@router.get("", response_model=List[TaskOut])
+@router.get("", response_model=PaginatedTasks)
 def get_all_user_tasks(
     status: Optional[TaskStatus] = None,
     skip: int = 0,
@@ -35,10 +45,18 @@ def get_all_user_tasks(
     query = db.query(Task).filter(Task.user_id == current_user.id)
     if status:
         query = query.filter(Task.status == status)
-    return query.offset(skip).limit(limit).all()
 
+    total = query.count()
+    tasks = query.offset(skip).limit(limit).all()
 
-@router.get("/{task_id}", response_model=TaskOut)
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "tasks": tasks
+    }
+
+@router.get("/{task_id:int}", response_model=TaskOut)
 def get_specific_task(
     task_id: int,
     db: Session = Depends(get_db),
@@ -66,7 +84,7 @@ def create_task(
     return db_task
 
 
-@router.put("/{task_id}", response_model=TaskOut)
+@router.put("/{task_id:int}", response_model=TaskOut)
 def update_task(
     task_id: int,
     updates: TaskUpdate,
@@ -87,7 +105,7 @@ def update_task(
     return task
 
 
-@router.delete("/{task_id}")
+@router.delete("/{task_id:int}")
 def delete_task(
     task_id: int,
     db: Session = Depends(get_db),
@@ -105,7 +123,7 @@ def delete_task(
     return {"message": "Task deleted"}
 
 
-@router.post("/tasks/{task_id}/complete", response_model=TaskOut)
+@router.post("/{task_id:int}/complete", response_model=TaskOut)
 def mark_completed(
     task_id: int,
     db: Session = Depends(get_db),
@@ -122,3 +140,26 @@ def mark_completed(
     db.commit()
     db.refresh(task)
     return task
+
+@router.get("/filter-by-status/", response_model=PaginatedTasks)
+def filter_task_by_status(
+    status: Optional[TaskStatus] = Query(None, description="Filter tasks by status"),
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = db.query(Task)
+
+    if status is not None:
+        query = query.filter(Task.status == status)
+
+    total = query.count()
+    tasks = query.offset(skip).limit(limit).all()
+
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "tasks": tasks
+    }

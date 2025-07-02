@@ -59,6 +59,8 @@
     const createForm    = document.getElementById("createForm");
 
     let skip = 0;
+    let total = 0;
+
     function currentPage() {
       const lim = parseInt(limitInput.value, 10);
       return Math.floor(skip / lim) + 1;
@@ -74,11 +76,15 @@
       const res = await fetch(url, {
         headers: { "Authorization": "Bearer " + token }
       });
+
       if (res.status === 401) {
         localStorage.removeItem("token");
         return location.href = "/static/login.html";
       }
-      const tasks = await res.json();
+
+      const data = await res.json();
+      const tasks = data.tasks || [];
+      total = data.total || 0;
 
       tasksUL.innerHTML = "";
       for (const t of tasks) {
@@ -92,7 +98,7 @@
 
       pageNumSpan.textContent = currentPage();
       prevBtn.disabled = skip === 0;
-      nextBtn.disabled = tasks.length < lim;
+      nextBtn.disabled = skip + lim >= total;
     }
 
     loadBtn.onclick = () => {

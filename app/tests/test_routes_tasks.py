@@ -14,7 +14,9 @@ def test_create_task(client):
 def test_get_all_tasks(client):
     response = client.get("/tasks")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert isinstance(data["tasks"], list)
 
 
 def test_get_task_by_id(client):
@@ -77,18 +79,17 @@ def test_complete_task(client):
     task_id = task["id"]
     response = client.get(f"/tasks/{task_id}")
     assert response.json()["status"] == "New"
-    response = client.post(f"/tasks/tasks/{task_id}/complete")
+    response = client.post(f"/tasks/{task_id}/complete")
     assert response.status_code == 200
     assert response.json()["status"] == "Completed"
 
 def test_list_public_tasks(client):
-    task1 = client.post("/tasks", json={"title": "Public Task 1", "description": "Desc 1"}).json()
-    task2 = client.post("/tasks", json={"title": "Public Task 2", "description": "Desc 2"}).json()
+    client.post("/tasks", json={"title": "Public Task 1", "description": "Desc 1"}).json()
+    client.post("/tasks", json={"title": "Public Task 2", "description": "Desc 2"}).json()
 
     response = client.get("/tasks/public")
     assert response.status_code == 200
-    tasks = response.json()
-    assert isinstance(tasks, list)
-    ids = [task["id"] for task in tasks]
-    assert task1["id"] in ids
-    assert task2["id"] in ids
+    data = response.json()
+    assert isinstance(data, dict)
+    assert isinstance(data["tasks"], list)
+    assert len(data["tasks"]) == 2

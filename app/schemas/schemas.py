@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     first_name: str
     last_name: Optional[str] = None
     username: str
-    password: str = Field(required=True, min_length=6)
+    password: str = Field(..., min_length=6)
 
 
 class UserLogin(BaseModel):
@@ -46,3 +46,9 @@ class TaskOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PaginatedTasks(BaseModel):
+    total: int
+    skip: int
+    limit: int
+    tasks: List[TaskOut]
