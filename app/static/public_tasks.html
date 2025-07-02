@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Public Tasks</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+</head>
+<body>
+  <div id="navbar">
+    <nav>
+      <a href="/static/public_tasks.html">Public Tasks</a> |
+      <a href="/static/tasks.html">My Tasks</a> |
+      <a href="/static/logout.html">Logout</a>
+    </nav>
+  </div>
+  <h1>Public Tasks</h1>
+
+  <label>
+    Status:
+    <select id="statusFilter">
+      <option value="">All</option>
+      <option value="New">New</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Completed">Completed</option>
+    </select>
+  </label>
+
+  <label>
+    Items per page:
+    <input type="number" id="limit" value="10" min="1" />
+  </label>
+
+  <button id="load">Load Tasks</button>
+
+  <div style="margin-top:1em;">
+    <button id="prev" disabled>Previous</button>
+    <span>Page <span id="pageNum">1</span></span>
+    <button id="next">Next</button>
+  </div>
+
+  <ul id="tasks"></ul>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) location.href = "/static/login.html";
+
+    const statusFilter = document.getElementById("statusFilter");
+    const limitInput = document.getElementById("limit");
+    const loadBtn = document.getElementById("load");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const pageNumSpan = document.getElementById("pageNum");
+    const tasksUL = document.getElementById("tasks");
+
+    let skip = 0;
+
+    function currentPage() {
+      return Math.floor(skip / parseInt(limitInput.value, 10)) + 1;
+    }
+
+    async function loadTasks() {
+      const limit = parseInt(limitInput.value, 10);
+      let url = `/tasks/public?skip=${skip}&limit=${limit}`;
+      if (statusFilter.value) {
+        url += `&status=${encodeURIComponent(statusFilter.value)}`;
+      }
+      const res = await fetch(url);
+      if (!res.ok) {
+        alert("Failed to load tasks");
+        return;
+      }
+      const tasks = await res.json();
+      tasksUL.innerHTML = "";
+
+      for (const t of tasks) {
+        const li = document.createElement("li");
+        li.textContent = `${t.title} [${t.status}]`;
+        tasksUL.appendChild(li);
+      }
+
+      pageNumSpan.textContent = currentPage();
+      prevBtn.disabled = skip === 0;
+      nextBtn.disabled = tasks.length < limit;
+    }
+
+    loadBtn.onclick = () => {
+      skip = 0;
+      loadTasks();
+    };
+
+    prevBtn.onclick = () => {
+      const limit = parseInt(limitInput.value, 10);
+      skip = Math.max(0, skip - limit);
+      loadTasks();
+    };
+
+    nextBtn.onclick = () => {
+      const limit = parseInt(limitInput.value, 10);
+      skip += limit;
+      loadTasks();
+    };
+
+    loadTasks();
+  </script>
+</body>
+</html>

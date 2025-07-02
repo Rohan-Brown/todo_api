@@ -80,3 +80,15 @@ def test_complete_task(client):
     response = client.post(f"/tasks/tasks/{task_id}/complete")
     assert response.status_code == 200
     assert response.json()["status"] == "Completed"
+
+def test_list_public_tasks(client):
+    task1 = client.post("/tasks", json={"title": "Public Task 1", "description": "Desc 1"}).json()
+    task2 = client.post("/tasks", json={"title": "Public Task 2", "description": "Desc 2"}).json()
+
+    response = client.get("/tasks/public")
+    assert response.status_code == 200
+    tasks = response.json()
+    assert isinstance(tasks, list)
+    ids = [task["id"] for task in tasks]
+    assert task1["id"] in ids
+    assert task2["id"] in ids
