@@ -10,9 +10,9 @@ from app.schemas.schemas import Token, UserCreate, UserLogin
 router = APIRouter()
 
 
-@router.post("/register", response_model=Token)
+@router.post("/register", response_model=Token)  # Registers user and returns access token
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    if get_user_by_username(db, user.username):
+    if get_user_by_username(db, user.username):  # Raise exception if username already exists
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
     db_user = User(**user.model_dump(exclude={"password"}), password=hashed_password)
@@ -24,7 +24,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(user: UserLogin, db: Session = Depends(get_db)):  # Logs user in by returning access token
     db_user = get_user_by_username(db, user.username)
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid credentials")

@@ -12,12 +12,12 @@ router = APIRouter()
 
 
 @router.get("/public", response_model=PaginatedTasks)
-def get_all_tasks(
+def get_all_tasks(  # Returns paginated queried tasks created by anyone
     status: Optional[TaskStatus] = None,
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
 ):
     query = db.query(Task)
     if status:
@@ -35,7 +35,7 @@ def get_all_tasks(
 
 
 @router.get("", response_model=PaginatedTasks)
-def get_all_user_tasks(
+def get_all_user_tasks(  # Returns paginated queried tasks created by current user only.
     status: Optional[TaskStatus] = None,
     skip: int = 0,
     limit: int = 10,
@@ -57,12 +57,12 @@ def get_all_user_tasks(
     }
 
 @router.get("/{task_id:int}", response_model=TaskOut)
-def get_specific_task(
+def get_specific_task(  # Returns details to a specific task only if created by current user
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = (
+    task = (  # Only returns task if created by current user
         db.query(Task)
         .filter(Task.id == task_id, Task.user_id == current_user.id)
         .first()
@@ -72,7 +72,7 @@ def get_specific_task(
     return task
 
 @router.post("", response_model=TaskOut)
-def create_task(
+def create_task(  # Creates task based on TaskCreate schema
     task: TaskCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -85,7 +85,7 @@ def create_task(
 
 
 @router.put("/{task_id:int}", response_model=TaskOut)
-def update_task(
+def update_task(  # Updates task based on TaskUpdate schema only if task was created by current user
     task_id: int,
     updates: TaskUpdate,
     db: Session = Depends(get_db),
@@ -106,7 +106,7 @@ def update_task(
 
 
 @router.delete("/{task_id:int}")
-def delete_task(
+def delete_task(  # Deletes task only if task was created by current user
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -124,7 +124,7 @@ def delete_task(
 
 
 @router.post("/{task_id:int}/complete", response_model=TaskOut)
-def mark_completed(
+def mark_completed(  # Marks task as complete although update_task updates the task to be New, In Progress or Complete
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -142,12 +142,12 @@ def mark_completed(
     return task
 
 @router.get("/filter-by-status/", response_model=PaginatedTasks)
-def filter_task_by_status(
+def filter_task_by_status(  # Filters query by status although filter by status already implemented in get_all_tasks and get_all_user_tasks
     status: Optional[TaskStatus] = Query(None, description="Filter tasks by status"),
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
 ):
     query = db.query(Task)
 

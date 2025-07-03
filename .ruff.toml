@@ -1,4 +1,3 @@
-[tool.ruff]
 extend-ignore = [
   "B018",  # Useless expression
   "F401",  # Unused imports
