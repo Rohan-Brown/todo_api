@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_current_user, get_db
@@ -9,7 +10,13 @@ from app.schemas.schemas import PaginatedTasks, TaskCreate, TaskOut, TaskUpdate
 
 router = APIRouter()
 
-
+def get_task_or_403(task_id: int, user_id: int, db: Session) -> Task:
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
+    return task
 
 @router.get("/public", response_model=PaginatedTasks)
 def get_all_tasks(  # Returns paginated queried tasks created by anyone
@@ -67,8 +74,7 @@ def get_specific_task(  # Returns details to a specific task only if created by 
         .filter(Task.id == task_id, Task.user_id == current_user.id)
         .first()
     )
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
+    task = get_task_or_403(task_id, current_user.id, db)
     return task
 
 @router.post("", response_model=TaskOut)
@@ -79,8 +85,12 @@ def create_task(  # Creates task based on TaskCreate schema
 ):
     db_task = Task(**task.dict(), user_id=current_user.id)
     db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
+    try:
+        db.commit()
+        db.refresh(db_task)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create task")
     return db_task
 
 
@@ -96,12 +106,15 @@ def update_task(  # Updates task based on TaskUpdate schema only if task was cre
         .filter(Task.id == task_id, Task.user_id == current_user.id)
         .first()
     )
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
+    task = get_task_or_403(task_id, current_user.id, db)
     for field, value in updates.dict(exclude_unset=True).items():
         setattr(task, field, value)
-    db.commit()
-    db.refresh(task)
+    try:
+        db.commit()
+        db.refresh(task)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to update task")
     return task
 
 
@@ -116,10 +129,13 @@ def delete_task(  # Deletes task only if task was created by current user
         .filter(Task.id == task_id, Task.user_id == current_user.id)
         .first()
     )
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    db.delete(task)
-    db.commit()
+    task = get_task_or_403(task_id, current_user.id, db)
+    try:
+        db.delete(task)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to delete task")
     return {"message": "Task deleted"}
 
 
@@ -134,11 +150,14 @@ def mark_completed(  # Marks task as complete although update_task updates the t
         .filter(Task.id == task_id, Task.user_id == current_user.id)
         .first()
     )
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
+    task = get_task_or_403(task_id, current_user.id, db)
     task.status = TaskStatus.completed
-    db.commit()
-    db.refresh(task)
+    try:
+        db.commit()
+        db.refresh(task)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to complete task")
     return task
 
 @router.get("/filter-by-status/", response_model=PaginatedTasks)
