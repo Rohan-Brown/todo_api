@@ -1,0 +1,6 @@
+[tool.ruff]
+extend-ignore = [
+  "B018",  # Useless expression
+  "F401",  # Unused imports
+  "F841",  # Unused variables
+]
