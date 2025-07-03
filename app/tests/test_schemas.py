@@ -1,7 +1,8 @@
 import pytest
 
-from app.schemas.schemas import (TaskCreate, TaskOut, TaskStatus, TaskUpdate,
-                                 Token, UserCreate, UserLogin)
+from app.schemas.schemas import (PaginatedTasks, TaskCreate, TaskOut,
+                                 TaskStatus, TaskUpdate, Token, UserCreate,
+                                 UserLogin)
 
 
 def test_user_create_valid():
@@ -58,3 +59,20 @@ def test_task_out_from_orm():
     schema = TaskOut.model_validate(orm_obj)
     assert schema.status == TaskStatus.in_progress
     assert schema.title == "Test"
+
+def test_paginated_tasks_schema():
+    task = TaskOut(id=1, title="Test Task", description="A test task", status=TaskStatus.new)
+
+    paginated = PaginatedTasks(
+        total=1,
+        skip=0,
+        limit=10,
+        tasks=[task]
+    )
+
+    assert paginated.total == 1
+    assert paginated.skip == 0
+    assert paginated.limit == 10
+    assert isinstance(paginated.tasks, list)
+    assert paginated.tasks[0].title == "Test Task"
+    assert paginated.tasks[0].status == TaskStatus.new

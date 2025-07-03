@@ -34,6 +34,8 @@
 
     <button type="submit">Update Task</button>
   </form>
+  <button type="button" id="deleteBtn" style="background-color: red;">Delete Task</button>
+
 
   <script>
     const token = localStorage.getItem("token");
@@ -79,7 +81,25 @@
         alert("Failed to update: " + errorText);
       }
     };
+    document.getElementById("deleteBtn").onclick = async () => {
+      const confirmed = confirm("Are you sure you want to delete this task?");
+      if (!confirmed) return;
 
+      const res = await fetch(`/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (res.ok) {
+        alert("Task deleted");
+        location.href = "/static/tasks.html";
+      } else {
+        const errorText = await res.text();
+        alert("Failed to delete: " + errorText);
+      }
+    };
     loadTask();
   </script>
 </body>

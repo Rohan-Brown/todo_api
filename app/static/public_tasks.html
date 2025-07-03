@@ -53,6 +53,7 @@
     const tasksUL = document.getElementById("tasks");
 
     let skip = 0;
+    let total = 0;
 
     function currentPage() {
       return Math.floor(skip / parseInt(limitInput.value, 10)) + 1;
@@ -64,14 +65,23 @@
       if (statusFilter.value) {
         url += `&status=${encodeURIComponent(statusFilter.value)}`;
       }
-      const res = await fetch(url);
+
+      const res = await fetch(url, {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
       if (!res.ok) {
         alert("Failed to load tasks");
         return;
       }
-      const tasks = await res.json();
-      tasksUL.innerHTML = "";
 
+      const data = await res.json();
+      const tasks = data.tasks;
+      total = data.total;
+
+      tasksUL.innerHTML = "";
       for (const t of tasks) {
         const li = document.createElement("li");
         li.textContent = `${t.title} [${t.status}]`;
@@ -80,7 +90,7 @@
 
       pageNumSpan.textContent = currentPage();
       prevBtn.disabled = skip === 0;
-      nextBtn.disabled = tasks.length < limit;
+      nextBtn.disabled = skip + limit >= total;
     }
 
     loadBtn.onclick = () => {

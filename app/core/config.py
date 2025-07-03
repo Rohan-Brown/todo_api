@@ -1,7 +1,7 @@
 from pydantic import BaseSettings
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings):  # Gets env variables from .env
     DATABASE_URL: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

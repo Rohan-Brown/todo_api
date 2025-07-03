@@ -9,7 +9,8 @@ from app.models.models import User
 
 bearer_scheme = HTTPBearer()
 
-def get_db():
+
+def get_db():  # Creates new session per request
     db = SessionLocal()
     try:
         yield db
@@ -17,7 +18,7 @@ def get_db():
         db.close()
 
 
-def get_current_user(
+def get_current_user(  # Returns current user
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ):
