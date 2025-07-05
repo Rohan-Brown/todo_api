@@ -69,16 +69,17 @@ def test_task_out_from_orm():
     assert schema.status == TaskStatus.in_progress
     assert schema.title == "Test"
 
+
 def test_paginated_tasks_schema():
     # Paginated schema should return proper values for 1 task result
-    task = TaskOut(id=1, title="Test Task Title", description="A test task description", status=TaskStatus.new)
-
-    paginated = PaginatedTasks(
-        total=1,
-        skip=0,
-        limit=10,
-        tasks=[task]
+    task = TaskOut(
+        id=1,
+        title="Test Task Title",
+        description="A test task description",
+        status=TaskStatus.new,
     )
+
+    paginated = PaginatedTasks(total=1, skip=0, limit=10, tasks=[task])
 
     assert paginated.total == 1
     assert paginated.skip == 0

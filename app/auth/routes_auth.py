@@ -11,7 +11,9 @@ from app.schemas.schemas import Token, UserCreate, UserLogin
 router = APIRouter()
 
 
-@router.post("/register", response_model=Token)  # Registers user and returns access token
+@router.post(
+    "/register", response_model=Token
+)  # Registers user and returns access token
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """
     Registers a new user in the database and returns an access token.
@@ -33,7 +35,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         - Username must be unique.
         - Rollback writing to database successfully implemented
     """
-    if get_user_by_username(db, user.username):  # Raise exception if username already exists
+    if get_user_by_username(
+        db, user.username
+    ):  # Raise exception if username already exists
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
     db_user = User(**user.model_dump(exclude={"password"}), password=hashed_password)
@@ -50,7 +54,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(user: UserLogin, db: Session = Depends(get_db)):  # Logs user in by returning access token
+def login(
+    user: UserLogin, db: Session = Depends(get_db)
+):  # Logs user in by returning access token
     """
     Verifies a user's credentials and returns an access token if successful.
 
