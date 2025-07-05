@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: db  # Using to dynamically change host name from localhost to db
     ports:
       - "5432:5432"
     volumes:
@@ -25,6 +25,6 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: db  # Using to dynamically change host name from localhost to db
 volumes:
   postgres_data:

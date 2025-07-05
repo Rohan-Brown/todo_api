@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
 
 class TaskStatus(str, Enum):  # Enforces specific string values
@@ -27,13 +27,14 @@ class Token(BaseModel):  # Defines token fields
     token_type: str
 
 
+
 class TaskCreate(BaseModel):  # Defines task creation fields
-    title: str
+    title: str = Field(..., min_length=1)
     description: Optional[str] = None
 
 
 class TaskUpdate(BaseModel):  # Defines task updating fields
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1)
     description: Optional[str] = None
     status: Optional[TaskStatus] = None
 
