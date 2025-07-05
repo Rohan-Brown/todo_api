@@ -27,7 +27,6 @@ class Token(BaseModel):  # Defines token fields
     token_type: str
 
 
-
 class TaskCreate(BaseModel):  # Defines task creation fields
     title: str = Field(..., min_length=1)
     description: Optional[str] = None
@@ -47,6 +46,7 @@ class TaskOut(BaseModel):  # Defines returned task fields
 
     class Config:
         from_attributes = True
+
 
 class PaginatedTasks(BaseModel):  # Defines pagination information
     total: int

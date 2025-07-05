@@ -59,16 +59,17 @@
 
         const result = await response.json();
 
-        if (!response.ok) {
+        if (response.ok) {
+          localStorage.setItem("token", result.access_token);
+          document.getElementById("message").textContent = "Registration successful!";
+          window.location.href = "/static/tasks.html";
+        } else {
           throw new Error(result.detail || "Registration failed");
         }
-
-        document.getElementById("message").textContent = "Registration successful!";
-        console.log("Access Token:", result.access_token);
-
       } catch (err) {
         document.getElementById("message").textContent = err.message;
       }
+
     });
   </script>
 </body>

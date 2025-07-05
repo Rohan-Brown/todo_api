@@ -15,14 +15,18 @@ router = APIRouter()
 it in README file.
 """
 
+
 def get_task_or_403(task_id: int, user_id: int, db: Session) -> Task:
     # Returns 404 if page not found and 403 if user doesn't have access
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     if task.user_id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this task")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to access this task"
+        )
     return task
+
 
 @router.get("/public", response_model=PaginatedTasks)
 def get_all_tasks(  # Returns paginated queried tasks created by anyone
@@ -30,7 +34,9 @@ def get_all_tasks(  # Returns paginated queried tasks created by anyone
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
+    current_user: User = Depends(
+        get_current_user
+    ),  # Not used. Only to restrict access to authenticated users
 ):
     """
     Retrieve a paginated list of all tasks created by any user.
@@ -57,12 +63,7 @@ def get_all_tasks(  # Returns paginated queried tasks created by anyone
     total = query.count()
     tasks = query.offset(skip).limit(limit).all()
 
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "tasks": tasks
-    }
+    return {"total": total, "skip": skip, "limit": limit, "tasks": tasks}
 
 
 @router.get("", response_model=PaginatedTasks)
@@ -97,12 +98,8 @@ def get_all_user_tasks(  # Returns paginated queried tasks created by current us
     total = query.count()
     tasks = query.offset(skip).limit(limit).all()
 
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "tasks": tasks
-    }
+    return {"total": total, "skip": skip, "limit": limit, "tasks": tasks}
+
 
 @router.get("/{task_id:int}", response_model=TaskOut)
 def get_specific_task(  # Returns details to a specific task only if created by current user
@@ -129,8 +126,11 @@ def get_specific_task(  # Returns details to a specific task only if created by 
         - Only the user who created the task can access it
         - Returns specific task created by the current user.
     """
-    task = get_task_or_403(task_id, current_user.id, db)  # Only returns task if created by current user
+    task = get_task_or_403(
+        task_id, current_user.id, db
+    )  # Only returns task if created by current user
     return task
+
 
 @router.post("", response_model=TaskOut)
 def create_task(  # Creates task based on TaskCreate schema
@@ -279,13 +279,16 @@ def mark_completed(  # Marks task as Completed although update_task updates the 
         raise HTTPException(status_code=500, detail="Failed to complete task")
     return task
 
+
 @router.get("/filter-by-status/", response_model=PaginatedTasks)
 def filter_task_by_status(  # Filters query by status although filter by status already implemented in get_all_tasks and get_all_user_tasks
     status: Optional[TaskStatus] = Query(None, description="Filter tasks by status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
+    current_user: User = Depends(
+        get_current_user
+    ),  # Not used. Only to restrict access to authenticated users
 ):
     """
     Retrieve a paginated list of tasks that are filtered by status.
@@ -313,9 +316,4 @@ def filter_task_by_status(  # Filters query by status although filter by status 
     total = query.count()
     tasks = query.offset(skip).limit(limit).all()
 
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "tasks": tasks
-    }
+    return {"total": total, "skip": skip, "limit": limit, "tasks": tasks}

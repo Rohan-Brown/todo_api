@@ -6,13 +6,17 @@ from sqlalchemy.orm import relationship
 from app.db.session import Base
 
 
-class TaskStatus(str, enum.Enum):  # Defines values for status field in Task model. Enforces exact matches
+class TaskStatus(
+    str, enum.Enum
+):  # Defines values for status field in Task model. Enforces exact matches
     new = "New"
     in_progress = "In Progress"
     completed = "Completed"
 
 
-class User(Base):  # Defines user table in database with corresponding columns and tasks relationship
+class User(
+    Base
+):  # Defines user table in database with corresponding columns and tasks relationship
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -24,7 +28,9 @@ class User(Base):  # Defines user table in database with corresponding columns a
     tasks = relationship("Task", back_populates="owner", cascade="all, delete")
 
 
-class Task(Base):  # Defines Task model with ForeignKey to user's id with relationship to user defined. Status defined in TaskStatus.
+class Task(
+    Base
+):  # Defines Task model with ForeignKey to user's id with relationship to user defined. Status defined in TaskStatus.
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)

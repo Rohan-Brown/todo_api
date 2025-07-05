@@ -36,7 +36,9 @@ def initialize_database():  # Creates schema before every test and wipes it afte
 
 
 @pytest.fixture(scope="function", autouse=True)
-def clean_tables(db_session):  # Fallback after drop_all in initialize_database. Wipe data from database after each test
+def clean_tables(
+    db_session,
+):  # Fallback after drop_all in initialize_database. Wipe data from database after each test
     yield
     for table in reversed(Base.metadata.sorted_tables):
         db_session.execute(table.delete())
@@ -60,35 +62,62 @@ def client(db_session):  # Provides a test client for making HTTP requests
         finally:
             pass
 
-    app.dependency_overrides[get_db] = override_get_db  # Uses TEST_DATABASE_URL instead of DATABASE_URL
+    app.dependency_overrides[get_db] = (
+        override_get_db  # Uses TEST_DATABASE_URL instead of DATABASE_URL
+    )
 
     with TestClient(app) as c:
         yield c
 
     app.dependency_overrides.clear()
 
+
 @pytest.fixture(scope="function")
 def create_users(db_session):  # Creates 2 users to use in tests
     pw = "testpass123"
-    u1 = User(first_name="Test", last_name="User1", username="user1", password=get_password_hash(pw))
-    u2 = User(first_name="Test", last_name="User2", username="user2", password=get_password_hash(pw))
+    u1 = User(
+        first_name="Test",
+        last_name="User1",
+        username="user1",
+        password=get_password_hash(pw),
+    )
+    u2 = User(
+        first_name="Test",
+        last_name="User2",
+        username="user2",
+        password=get_password_hash(pw),
+    )
     db_session.add_all([u1, u2])
     db_session.commit()
     db_session.refresh(u1)
     db_session.refresh(u2)
-    return {"user1": {"username": "user1", "password": pw},
-            "user2": {"username": "user2", "password": pw}}
+    return {
+        "user1": {"username": "user1", "password": pw},
+        "user2": {"username": "user2", "password": pw},
+    }
+
 
 @pytest.fixture(scope="function")
-def token_headers(client, create_users):  # Used for authenticating user1 with an authentication token
+def token_headers(
+    client, create_users
+):  # Used for authenticating user1 with an authentication token
     creds = create_users["user1"]
-    resp = client.post("/auth/login", json={"username": creds['username'], "password": creds['password']})
+    resp = client.post(
+        "/auth/login",
+        json={"username": creds["username"], "password": creds["password"]},
+    )
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
+
 @pytest.fixture(scope="function")
-def other_token_headers(client, create_users):  # Enables access testing beyond if the user is just signed in
+def other_token_headers(
+    client, create_users
+):  # Enables access testing beyond if the user is just signed in
     creds = create_users["user2"]
-    resp = client.post("/auth/login", json={"username": creds['username'], "password": creds['password']})
+    resp = client.post(
+        "/auth/login",
+        json={"username": creds["username"], "password": creds["password"]},
+    )
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
