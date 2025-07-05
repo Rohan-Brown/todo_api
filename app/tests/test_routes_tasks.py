@@ -24,7 +24,7 @@ def test_requires_authentication(client: TestClient):
     ]
     for method, url in endpoints:
         resp = getattr(client, method)(url)
-        assert resp.status_code == 403  # Custom code for no access instead of 401
+        assert resp.status_code == 403  # Custom code for no access instead of 404
 
 
 def test_create_and_read_tasks(token_headers: dict, client: TestClient):
@@ -94,7 +94,7 @@ def test_cannot_delete_other_users_task(token_headers: dict, other_token_headers
     assert resp2.status_code == 403
 
 def test_cannot_complete_other_users_task(token_headers, other_token_headers, client):
-    # Checks if other users can set task status to complete even if the task doesn't belong to them with PUT method
+    # Checks if other users can set task status to 'Completed' even if the task doesn't belong to them with PUT method
 
     t = client.post("/tasks", json={"title": "User1"}, headers=token_headers).json()
     resp = client.put(f"/tasks/{t['id']}/complete", headers=other_token_headers)
@@ -138,7 +138,7 @@ def test_delete_nonexistent_task_returns_404(token_headers: dict, client: TestCl
     assert resp.json()["detail"] == "Task not found"
 
 def test_complete_nonexistent_task_returns_404(token_headers: dict, client: TestClient):
-    # Checks if status code error is 404 when updating status to complete using PUT method on a task that doesn't exist
+    # Checks if status code error is 404 when updating status to 'Completed' using PUT method on a task that doesn't exist
     resp = client.put("/tasks/9999/complete", headers=token_headers)
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Task not found"
@@ -167,9 +167,9 @@ def test_negative_skip_limit_return_422(token_headers, client):
     resp = client.get("/tasks?skip=-1&limit=-5", headers=token_headers)
     assert resp.status_code == 422
 
-def test_mark_complete_twice(token_headers: dict, client: TestClient):
-    # Updating task status to complete twice returns complete without any errors
-    resp = client.post("/tasks", json={"title": "complete_twice"}, headers=token_headers)
+def test_mark_completed_twice(token_headers: dict, client: TestClient):
+    # Updating task status to 'Completed' twice returns 'Completed' without any errors
+    resp = client.post("/tasks", json={"title": "completed_twice"}, headers=token_headers)
     tid = resp.json()["id"]
     client.put(f"/tasks/{tid}/complete", headers=token_headers)
     resp2 = client.put(f"/tasks/{tid}/complete", headers=token_headers)
