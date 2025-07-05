@@ -10,7 +10,12 @@ from app.schemas.schemas import PaginatedTasks, TaskCreate, TaskOut, TaskUpdate
 
 router = APIRouter()
 
+"""
+"/tasks/filter-by-status/" only exist because it was specified in task requirements. Read more about it in README file.
+"""
+
 def get_task_or_403(task_id: int, user_id: int, db: Session) -> Task:
+    # Returns 404 if page not found and 403 if user doesn't have access
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -21,8 +26,8 @@ def get_task_or_403(task_id: int, user_id: int, db: Session) -> Task:
 @router.get("/public", response_model=PaginatedTasks)
 def get_all_tasks(  # Returns paginated queried tasks created by anyone
     status: Optional[TaskStatus] = None,
-    skip: int = 0,
-    limit: int = 10,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
 ):
@@ -44,8 +49,8 @@ def get_all_tasks(  # Returns paginated queried tasks created by anyone
 @router.get("", response_model=PaginatedTasks)
 def get_all_user_tasks(  # Returns paginated queried tasks created by current user only.
     status: Optional[TaskStatus] = None,
-    skip: int = 0,
-    limit: int = 10,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -69,12 +74,7 @@ def get_specific_task(  # Returns details to a specific task only if created by 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = (  # Only returns task if created by current user
-        db.query(Task)
-        .filter(Task.id == task_id, Task.user_id == current_user.id)
-        .first()
-    )
-    task = get_task_or_403(task_id, current_user.id, db)
+    task = get_task_or_403(task_id, current_user.id, db)  # Only returns task if created by current user
     return task
 
 @router.post("", response_model=TaskOut)
@@ -101,13 +101,9 @@ def update_task(  # Updates task based on TaskUpdate schema only if task was cre
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = (
-        db.query(Task)
-        .filter(Task.id == task_id, Task.user_id == current_user.id)
-        .first()
-    )
+
     task = get_task_or_403(task_id, current_user.id, db)
-    for field, value in updates.dict(exclude_unset=True).items():
+    for field, value in updates.model_dump(exclude_unset=True).items():
         setattr(task, field, value)
     try:
         db.commit()
@@ -124,11 +120,7 @@ def delete_task(  # Deletes task only if task was created by current user
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = (
-        db.query(Task)
-        .filter(Task.id == task_id, Task.user_id == current_user.id)
-        .first()
-    )
+
     task = get_task_or_403(task_id, current_user.id, db)
     try:
         db.delete(task)
@@ -139,17 +131,12 @@ def delete_task(  # Deletes task only if task was created by current user
     return {"message": "Task deleted"}
 
 
-@router.post("/{task_id:int}/complete", response_model=TaskOut)
+@router.put("/{task_id:int}/complete", response_model=TaskOut)
 def mark_completed(  # Marks task as complete although update_task updates the task to be New, In Progress or Complete
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = (
-        db.query(Task)
-        .filter(Task.id == task_id, Task.user_id == current_user.id)
-        .first()
-    )
     task = get_task_or_403(task_id, current_user.id, db)
     task.status = TaskStatus.completed
     try:
@@ -163,8 +150,8 @@ def mark_completed(  # Marks task as complete although update_task updates the t
 @router.get("/filter-by-status/", response_model=PaginatedTasks)
 def filter_task_by_status(  # Filters query by status although filter by status already implemented in get_all_tasks and get_all_user_tasks
     status: Optional[TaskStatus] = Query(None, description="Filter tasks by status"),
-    skip: int = 0,
-    limit: int = 10,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),  # Not used. Only to restrict access to authenticated users
 ):
